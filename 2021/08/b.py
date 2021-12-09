@@ -13,21 +13,12 @@ unique = [lastpart.split(' ') for lastpart in unique]
 
 all_chars = ['a','b','c','d','e','f','g']
 all_permutations = list(itertools.permutations(all_chars))
-
 all_digits = ['abcefg','cf','acdeg','acdfg','bcdf','abdfg','abdefg','acf','abcdefg','abcdfg']
-# all_digits.sort()
 
 def transform(permutation, string):
     x = [permutation[ord(s)-ord('a')] for s in string]
     x.sort()
     return ''.join(x)
-
-# def tointeger(string):
-#     i, = np.where(np.array(all_digits)==string)
-#     return i
-
-# def disp_tointeger(strings):
-#     monkey = np.array(list(map(tointeger, strings))).flatten()
 
 def tointeger(display):
     num = 0
