@@ -6,22 +6,18 @@ binToInt' [] = 0
 binToInt' (x : xs) = (digitToInt x) + 2 * binToInt' xs
 binToInt = binToInt'.reverse
 
-countOnes = length . filter ((== '1') . head)
-chooseMajority xs = if 2*(countOnes xs) >= length xs then '1' else '0'
-chooseMinority xs = if 2*(countOnes xs) >= length xs then '0' else '1'
-
-findRate :: [String] -> String -> ([String]->Char) -> String
-findRate [x] result predicate = result++x
-findRate xs result predicate = do
-    let chosen = predicate xs
+findRate [x] result op = result++x
+findRate xs result op = do
+    let numOnes = length $ filter ((=='1') . head) xs
+    let chosen = if (2*numOnes) `op` (length xs) then '1' else '0'
     let ys = filter h xs where h x = head x == chosen
     let zs = map (drop 1) ys
     let new_result = result ++ [chosen]
-    findRate zs new_result predicate
+    findRate zs new_result op
 
 main = do
-    input <- readFile "dummy"
+    input <- readFile "input"
     let lines = words input
-    let oxygenRate = binToInt $ findRate lines "" chooseMajority
-    let carbRate = binToInt $ findRate lines "" chooseMinority
+    let oxygenRate = binToInt $ findRate lines "" (>=)
+    let carbRate = binToInt $ findRate lines "" (<)
     print (oxygenRate*carbRate)
