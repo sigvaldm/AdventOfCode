@@ -25,28 +25,44 @@ binToInt' [] = 0
 binToInt' (x : xs) = (digitToInt x) + 2 * binToInt' xs
 binToInt = binToInt'.reverse
 
-parsePacket :: String -> Packet
+parsePacket :: String -> (Packet, String)
 parsePacket bin = do
     let (version', a) = splitAt 3 bin
     let (typ', b) = splitAt 3 a
     let version = binToInt version'
     let typ = binToInt typ'
     case typ of
-        4 -> Literal version (parseChunks b)
-        otherwise -> Operator version (parseSubpackets b)
+        4 -> (Literal version value, remainder)
+            where (value, remainder) = parseChunks b
+        otherwise ->
+            (Literal 999 999, "")
+            -- Operator version (parseSubpackets b)
 
-parseChunks :: String -> Int
-parseChunks = binToInt . parseChunks'
-parseChunks' bin = do
-    let ((flag:chunk), remainder) = splitAt 5 bin
-    case flag of
-        '0' -> chunk
-        '1' -> chunk ++ (parseChunks' remainder)
+parseChunks :: String -> (Int, String)
+parseChunks bin = (binToInt a, b)
+    where
+        (a, b) = parseChunks' bin
+        parseChunks' bin = do
+            let ((flag:chunk), remainder) = splitAt 5 bin
+            case flag of
+                '0' -> (chunk, remainder)
+                '1' -> (chunk ++ a, b)
+                    where (a, b) = parseChunks' remainder
 
-parseSubpackets :: String -> [Packet]
-parseSubpackets bin = do
+parseOperator :: String -> ([Packet], String)
+parseOperator bin = do
     let (flag:a) = bin
     case flag of
-        '0' ->
-            let (len, b) = splitAt 15 a
-             
+        '0' -> parseSubpacketsLen len b
+            where (len, b) = splitAt 15 a
+        -- '1' -> parseSubpacketsNum num b
+        --     where (num, b) = splitAt 11 a
+
+parseSubpacketsLen :: Int -> String -> ([Packet], String)
+parseSubpacketsLen len s = do
+    let (p, r) = parsePacket s
+    let remLen = (length s) - (length r)
+    case remLen of
+        0 -> ([p], r)
+        otherwise -> (p:ps, rr)
+            where (ps, rr) = parseSubpacketsLen remLen r
