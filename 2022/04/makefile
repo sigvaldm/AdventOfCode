@@ -1,5 +1,8 @@
-a:	a.c
-	gcc a.c -o a
+# Run code with:
+# 	$ make; ./ab
+
+ab:	ab.c
+	gcc ab.c -o ab
 
 clean:
-	rm a
+	rm ab
