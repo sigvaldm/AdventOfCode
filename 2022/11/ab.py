@@ -30,12 +30,13 @@ for monkey_block in file:
 
 pprint(monkeys)
 
-rounds = 10000
+rounds = 20 # part a
+rounds = 10000 # part b
 
-toggle = False
-
+# Taking the modulus of an item with this decreases the magnitude of its number
+# while not chaning the result of further taking the modulus for one of the
+# monkeys.
 common_div_by = np.product([m.div_by for m in monkeys])
-print(common_div_by)
 
 for r in tqdm.trange(rounds):
     for monkey in monkeys:
@@ -46,25 +47,9 @@ for r in tqdm.trange(rounds):
 
             d = {'old': item}
             exec(monkey.operation, d)
-            item = d['new']//3
-            item = d['new']
-            item = d['new'] % common_div_by
-            # if item % monkey.div_by == 0:
-            # item = d['new']-3
-            # item = monkey.div_by + 1
-            # item = 0
-
-            # item = monkey.div_by
-            # if toggle: item += 1
-            # toggle ^= True
-
+            item = d['new']//3 # part a
+            item = d['new'] % common_div_by # part b
             to_monkey = monkey.if_true if item % monkey.div_by == 0 else monkey.if_false
-
-            # if len(monkeys[monkey.if_true].items) > len(monkeys[monkey.if_false].items):
-            #     to_monkey = monkey.if_false
-            # else:
-            #     to_monkey = monkey.if_true
-
             monkeys[to_monkey].items.append(item)
 
     # print(80*"-")
