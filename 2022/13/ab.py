@@ -1,4 +1,6 @@
+from pprint import pprint
 import numpy as np
+from functools import cmp_to_key
 
 with open('input.txt') as file:
     blocks = file.read().split("\n\n")
@@ -31,3 +33,17 @@ comparisons = list(map(lambda p: compare(*p), pairs))
 indices_right = np.where(np.array(comparisons)==-1)[0]+1
 
 print(sum(indices_right))
+
+# part b
+
+packets = [packet for pair in pairs for packet in pair]
+divider_packets = [[[2]], [[6]]]
+packets += divider_packets
+packets = sorted(packets, key=cmp_to_key(compare))
+
+#pprint(packets)
+
+divider_packet_indices = np.where(list(map(lambda x: x in divider_packets, packets)))[0]+1
+print(np.product(divider_packet_indices))
+
+
