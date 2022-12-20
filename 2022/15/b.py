@@ -2,25 +2,54 @@ import re
 import numpy as np
 from tqdm import trange
 
-lines = []
+eps = 0.001
+eps = 0
+dr = 0.5 + eps
+L = 20
+L = 4000000
+
+rhombuses = []
 with open('input.txt') as file:
     for line in file:
         # Each sub-list contains the four numbers on a line
-        lines.append(list(map(int, re.findall("-?\d+", line))))
-
-N = 20
-N = 4000000
-
-row = np.zeros(N+1)
-for y in trange(0,N+1):
-    row[:] = 0
-    for xs, ys, xb, yb in lines:
+        xs, ys, xb, yb = map(int, re.findall("-?\d+", line))
         radius = np.linalg.norm((xb-xs, yb-ys), ord=1)
-        half_width = int(radius - np.abs(ys-y))
-        xmin = max(0, xs-half_width)
-        xmax = min(N, xs+half_width)
-        row[xmin:xmax+1] = 1
-    x = np.where(row==0)[0]
-    if len(x)>0: break
+        rhombuses.append([xs, ys, radius+dr])
 
-print(x*4000000+y)
+# Make list of all line segments (start and stop coordinates) in rhombuses.
+# For each segment the y-coordinate must be in increasing order.
+segments = []
+for xs, ys, r in rhombuses:
+    segments.append(((xs, ys-r-dr), (xs-r-dr, ys)))
+    segments.append(((xs, ys-r-dr), (xs+r+dr, ys)))
+    segments.append(((xs-r-dr, ys), (xs, ys+r+dr)))
+    segments.append(((xs+r+dr, ys), (xs, ys+r+dr)))
+
+# Append vertical boundaries (horizontal not needed)
+#segments.append(((-dr, 0-dr), (-dr, L+dr)))
+#segments.append(((L+dr, 0-dr), (L+dr, L+dr)))
+
+# Find y-coordinate of intersecting line segments
+y_intersect = []
+for seg1 in segments:
+    for seg2 in segments:
+        dx1 = seg1[1][0] - seg1[0][0]
+        dy1 = seg1[1][1] - seg1[0][1]
+        dx2 = seg2[1][0] - seg2[0][0]
+        dy2 = seg2[1][1] - seg2[0][1]
+        denom = dx1*dy2-dx2*dy1
+        if abs(denom)<1e-6:
+            # segments are parallel.
+            continue
+        y = seg1[0][1]*dx1*dy2 - seg2[0][1]*dx2*dy1 + (seg2[0][0]-seg1[0][0])*dy1*dy2
+        y /= denom
+        if y < max(seg1[0][1], seg2[0][1]) or y > min(seg1[1][1], seg2[1][1]):
+            # segments do not intersect, only their extensions.
+            continue
+        y_intersect.append(y)
+
+y_intersect = list(set(filter(lambda x: x>-1 and x<L+1, y_intersect)))
+y_intersect.sort()
+print(len(y_intersect))
+
+print(y_intersect)
