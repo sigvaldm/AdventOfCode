@@ -47,12 +47,17 @@ for i in range(N):
     visited = np.zeros(N, dtype=bool)
     dijkstra(visited, distance[i], i)
 
+# Reduce problem size beforehand by removing zero rates (except starting point)
+
 current = mapping['AA']
+ind, = np.where(rates != 0)
+ind = np.concatenate(([current], ind))
+rates = rates[ind]
+distance = np.array([d[ind] for d in distance[ind]])
 
 def release(rates, current, min_left, depth=0):
     # Let current and min_left have two elements, one for me, one for elephant,
     # and advance one at a time.
-    print(depth, min_left)
     who = np.argmax(min_left)
 
     # Only check valves with non-zero rates
@@ -72,5 +77,5 @@ def release(rates, current, min_left, depth=0):
             max_pts = pts
     return max_pts
 
-max_pts = release(rates, np.array([current,current]), np.array([26,26]))
+max_pts = release(rates, np.array([0,0]), np.array([26,26]))
 print(max_pts)
