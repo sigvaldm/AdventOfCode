@@ -1,6 +1,7 @@
 import sys
 import re
 import numpy as np
+from copy import copy
 
 tunnels = dict()
 rates = dict()
@@ -17,14 +18,13 @@ with open(sys.argv[1]) as file:
 mapping = {key: i for i, key in enumerate(rates.keys())}
 mapping_ = {i: key for i, key in enumerate(rates.keys())}
 N = len(mapping)
-print(N)
 
 tunnels_ = []
 rates_ = []
 for from_key in tunnels:
     tunnels_.append(tuple(mapping[to_key] for to_key in tunnels[from_key]))
     rates_.append(rates[from_key])
-tunnels = np.array(tunnels_)
+tunnels = list(tunnels_)
 rates = np.array(rates_)
 
 # Building a distance matrix between valves using Dijkstra's algorithm
@@ -49,21 +49,21 @@ for i in range(N):
 
 current = mapping['AA']
 
-# print(distance)
-# print(rates)
-# ind, = np.where(rates != 0)
-# print(len(ind))
+def release(rates, current, min_left):
+    # Only check valves with non-zero rates
+    ind, = np.where(rates != 0)
+    max_pts = 0
+    for i in ind:
+        min_left_after = min_left - distance[current, i] - 1
+        if min_left_after < 0:
+            continue
+        rates_i = copy(rates)
+        rates_i[i] = 0
+        pts = min_left_after * rates[i] + release(rates_i, i, min_left_after)
+        if pts > max_pts:
+            max_pts = pts
+            next = i
+    return max_pts
 
-min_left = 30
-points = np.zeros(N)
-total_points = 0
-while min_left >= 0:
-    for i in range(N):
-        points[i] = (min_left-1-distance[current,i])*rates[i]
-    next = np.argmax(points)
-    total_points += points[next]
-    rates[next] = 0
-    min_left = min_left - 1 - distance[current, next]
-    print(min_left)
-    current = next
-print(total_points)
+max_pts = release(rates, current, 30)
+print(max_pts)
