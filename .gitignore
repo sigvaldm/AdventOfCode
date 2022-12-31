@@ -6,4 +6,8 @@
 **.swp
 **/a
 **/b
+**/ab
+**/*.out
 **/main
+**/Day*Advent of Code*
+**/*.mod
